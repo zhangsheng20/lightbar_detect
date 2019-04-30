@@ -30,6 +30,8 @@ using namespace cv;
 
 
 
+
+
 void DisplayFps(Mat& img);//desplay FPS
 int OpenVideoStream(int camWay);
 void GetCameraPara();
