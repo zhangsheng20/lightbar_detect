@@ -7,7 +7,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 message(STATUS "optional:-std=c++11")
 endif(CMAKE_COMPILER_IS_GNUCXX)
 
-set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_BUILD_TYPE "RELEASE")
 find_package(OpenCV REQUIRED)
 
 
