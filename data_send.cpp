@@ -3,7 +3,7 @@
 
 
 extern int IsDetectedFlag;
-extern Point2f SendYawPitchError;
+extern Point2f SendYawPitchErrorCurrent;
 
 extern Serial sel;
 unsigned char Add_CRC(unsigned char InputBytes[], unsigned char data_lenth)
@@ -52,13 +52,13 @@ void Data_Code( int x_Data,  int y_Data) {
 
 void SendDataToInfantry()
 {
-       SendYawPitchError.x=-9.6;
-       SendYawPitchError.y=-8.6;
+       SendYawPitchErrorCurrent.x=-9.6;
+       SendYawPitchErrorCurrent.y=-8.6;
 
 
     char buff[8];
 
-    Data_Code( (int)(SendYawPitchError.x*1000),  (int)(SendYawPitchError.y*1000));
+    Data_Code( (int)(SendYawPitchErrorCurrent.x*1000),  (int)(SendYawPitchErrorCurrent.y*1000));
     for (int i = 0; i < 8; i++)
         buff[i] = data_send_buf[i];
 

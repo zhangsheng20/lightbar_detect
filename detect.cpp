@@ -26,8 +26,11 @@
 
 
 
-Point2f DetectedArmourYawPitchError[20];    //存储所有检测出来的装甲板角度偏差值
-Point2f SendYawPitchError;            //存储需要发送的装甲板信息
+Point2f DetectedArmourYawPitchErrorCurrent[20];    //存储所有检测出来的装甲板角度偏差值
+Point2f DetectedArmourYawPitchErrorLast[20];
+Point2f SendYawPitchErrorCurrent;            //存储需要发送的装甲板信息
+Point2f SendYawPitchErrorLast;
+
 int  IsDetectedFlag ;                 //是否检测到装甲板信息
 extern double myVideoCaptureProperties[50];   //存储摄像头参数
 
@@ -73,6 +76,12 @@ void DrawEnclosingRexts(Mat &grayImage, Mat &dstImage)
 {
     int detected_armour_cnt = 0;
 
+    SendYawPitchErrorLast=SendYawPitchErrorCurrent;
+    for(int i=0;i<20;i++) //
+    {
+        DetectedArmourYawPitchErrorLast[i].x=DetectedArmourYawPitchErrorCurrent[i].x;
+        DetectedArmourYawPitchErrorLast[i].y=DetectedArmourYawPitchErrorCurrent[i].y;
+    }
 
     //找出轮廓及最小外接矩形
         vector<vector<Point>> contours;   //每一组Point点集就是一个轮廓
@@ -211,7 +220,7 @@ void DrawEnclosingRexts(Mat &grayImage, Mat &dstImage)
 
                             if (tan_inclination < tan(max_inclination_degree / 180.0*3.14)) //判断灯条中心连线的倾斜角
                             {
-                                if(tan_inclination*tan_inclination2>(1-max_transformation)&&tan_inclination*tan_inclination2<(1+max_transformation))
+                                if(tan_inclination*tan_inclination2>(1-max_transformation)&&tan_inclination*tan_inclination2<(1+max_transformation)) //判断两个平行的灯条是否错位
                                 {
                                     float dis_x = (int)((box[i].center.x + box[j].center.x) / 2);
                                     float dis_y = (int)((box[i].center.y + box[j].center.y) / 2);
@@ -219,7 +228,7 @@ void DrawEnclosingRexts(Mat &grayImage, Mat &dstImage)
                                     Point2f PitchYawError = CaculatePitchYawError(dis_x, dis_y);
                                     //cout << PitchYawError.x << "   " << PitchYawError.y << endl;
 
-                                    DetectedArmourYawPitchError[detected_armour_cnt] = PitchYawError;
+                                    DetectedArmourYawPitchErrorCurrent[detected_armour_cnt] = PitchYawError;
                                     detected_armour_cnt++;
                                 }
 
@@ -242,26 +251,41 @@ void DrawEnclosingRexts(Mat &grayImage, Mat &dstImage)
        // SendYawPitchError = Point2f(0,0);
     }
     else
-    {//找出离中心最近的装甲板，发送给下位机
+    { //找出离上一帧最近的点
          IsDetectedFlag=1;   //检测到
-        float max_error = 0;
+         float min_error = 20;
         for (int i = 0; i < detected_armour_cnt;i++)
         {
-            float error = DetectedArmourYawPitchError[i].x*DetectedArmourYawPitchError[i].x +
-                DetectedArmourYawPitchError[i].y*DetectedArmourYawPitchError[i].y*0.5;   //减小垂直方向的权重
-            if (error > max_error)
-            {
-                max_error = error;
-                SendYawPitchError =DetectedArmourYawPitchError[i];
-            }
+            float error = pow((DetectedArmourYawPitchErrorCurrent[i].x-SendYawPitchErrorLast.x),2)
+                            +pow((DetectedArmourYawPitchErrorCurrent[i].y-SendYawPitchErrorLast.y),2);
+             if (error < min_error)
+             {
+                  min_error = error;
+                  SendYawPitchErrorCurrent =DetectedArmourYawPitchErrorCurrent[i];
+             }
 
         }
 
-
-
     }
 
-    //cout << SendYawPitchError.x << "   " << SendYawPitchError.y << endl;
+
+//    {//找出离中心最近的装甲板，发送给下位机
+//        IsDetectedFlag=1;   //检测到
+//      float max_error = 0;
+//        for (int i = 0; i < detected_armour_cnt;i++)
+//       {
+//           float error = DetectedArmourYawPitchError[i].x*DetectedArmourYawPitchError[i].x +
+//              DetectedArmourYawPitchError[i].y*DetectedArmourYawPitchError[i].y*0.5;   //减小垂直方向的权重
+//         if (error > max_error)
+//        {
+//           max_error = error;
+//         SendYawPitchError =DetectedArmourYawPitchError[i];
+//   }
+
+//    }
+//}
+
+    cout << SendYawPitchErrorCurrent.x << "   " << SendYawPitchErrorCurrent.y << endl;
 
 }
 

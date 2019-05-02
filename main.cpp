@@ -42,7 +42,7 @@ String video_file_name = ""; //将要打开的视频路径  注意‘/’和‘\
 double myVideoCaptureProperties[50];   //存储摄像头参数
 
 
-extern Point2f SendYawPitchError;            //存储需要发送的装甲板信息
+extern Point2f SendYawPitchErrorCurrent;            //存储需要发送的装甲板信息
 extern int  IsDetectedFlag ;                 //是否检测到装甲板信息
 
 #define SerialPort_COM 1    //用于发送的串口的串口号
@@ -113,7 +113,7 @@ int main()
 
         threshold_frame = mythreshold(frame_read, 200);  //图像二值化
         DrawEnclosingRexts(threshold_frame, frame_read);   //画灯条，求装甲板位置，算云台Yaw和Pitch偏角
-        cout << SendYawPitchError.x << "   " << SendYawPitchError.y << endl;
+        cout << SendYawPitchErrorCurrent.x << "   " << SendYawPitchErrorCurrent.y << endl;
 
 
         #ifdef SHOW_FRAMES
