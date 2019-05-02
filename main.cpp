@@ -141,7 +141,7 @@ int OpenVideoStream(int camWay)
         capture.open(video_file_name); return true;
     }
     else if (camWay == 0) {
-        capture.open(1); return true;
+        capture.open(0); return true;
     }
     else if (camWay == 1) {
         capture.open(1); return true;

@@ -26,12 +26,12 @@
 
 
 
-Point2f DetectedArmourYawPitchErrorCurrent[20];    //存储所有检测出来的装甲板角度偏差值
-Point2f DetectedArmourYawPitchErrorLast[20];
-Point2f SendYawPitchErrorCurrent;            //存储需要发送的装甲板信息
-Point2f SendYawPitchErrorLast;
+Point2f DetectedArmourYawPitchErrorCurrent[20]={};    //存储所有检测出来的装甲板角度偏差值
+Point2f DetectedArmourYawPitchErrorLast[20]={};
+Point2f SendYawPitchErrorCurrent=Point2f(0,0);            //存储需要发送的装甲板信息
+Point2f SendYawPitchErrorLast=Point2f(0,0);
 
-int  IsDetectedFlag ;                 //是否检测到装甲板信息
+int  IsDetectedFlag=0 ;                 //是否检测到装甲板信息
 extern double myVideoCaptureProperties[50];   //存储摄像头参数
 
 
@@ -74,6 +74,17 @@ Point2f CaculatePitchYawError(float Pixel_x, float Pixel_y)
 
 void DrawEnclosingRexts(Mat &grayImage, Mat &dstImage)
 {
+    static int IsFirstRun=0;
+    if(IsFirstRun==0)
+    {
+        IsFirstRun=1;
+        for(int i=0;i<20;i++)
+           {
+            DetectedArmourYawPitchErrorCurrent[i]=Point2f(0,0);
+           }
+    }
+
+
     int detected_armour_cnt = 0;
 
     SendYawPitchErrorLast=SendYawPitchErrorCurrent;
