@@ -24,7 +24,7 @@ using namespace cv;
 #define TX2         //
 //#define SERIAL_SEND //是否开启串口并发送数据
 #define SHOW_FRAMES //是否显示图像
-#define VIDEO_SAVE
+//#define VIDEO_SAVE
 
 
 
@@ -107,6 +107,9 @@ int main()
     GetCameraPara();
 
     while (capture.read(frame_read)) {
+        #ifdef VIDEO_SAVE
+             videosaver.write(frame_read);
+        #endif
 
         threshold_frame = mythreshold(frame_read, 200);  //图像二值化
         DrawEnclosingRexts(threshold_frame, frame_read);   //画灯条，求装甲板位置，算云台Yaw和Pitch偏角
@@ -122,9 +125,7 @@ int main()
             SendDataToInfantry();
         #endif
 
-        #ifdef VIDEO_SAVE
-             videosaver.write(frame_read);
-        #endif
+
         CoutFps();
     }
 

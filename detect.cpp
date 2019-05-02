@@ -81,7 +81,7 @@ void DrawEnclosingRexts(Mat &grayImage, Mat &dstImage)
         findContours(grayImage, contours, hierarcy, RETR_EXTERNAL, CHAIN_APPROX_NONE);
 
         vector<RotatedRect> box(contours.size()); //定义最小外接矩形集合
-        Point2f rect[4];
+
         for (int i = 0; i < contours.size(); i++)
         {
             box[i] = minAreaRect(Mat(contours[i]));  //计算每个轮廓最小外接矩形
@@ -102,7 +102,7 @@ void DrawEnclosingRexts(Mat &grayImage, Mat &dstImage)
         {
             if (box[i].size.height > box[i].size.width)
             {
-                if (box[i].size.height < (max_lightbar_PixelLength + 5) && box[i].size.height >(min_lightbar_PixelLength - 5))
+                if (box[i].size.height < (max_lightbar_PixelLength *(1+max_transformation)) && box[i].size.height >(min_lightbar_PixelLength *(1-max_transformation)))
                 {
                     //box[i].points(rect);  //把最小外接矩形四个端点复制给rect数组
                     //for (int j = 0; j < 4; j++) {
@@ -113,7 +113,7 @@ void DrawEnclosingRexts(Mat &grayImage, Mat &dstImage)
             }
             else
             {
-                if (box[i].size.width < (max_lightbar_PixelLength + 5) && box[i].size.width >(min_lightbar_PixelLength - 5))
+                if (box[i].size.width < (max_lightbar_PixelLength *(1+max_transformation)) && box[i].size.width >(1-max_transformation))
                 {
                     //box[i].points(rect);  //把最小外接矩形四个端点复制给rect数组
                     //for (int j = 0; j < 4; j++) {
@@ -134,8 +134,11 @@ void DrawEnclosingRexts(Mat &grayImage, Mat &dstImage)
     {
         if (box[i].center.x != -1)
         {
-
+            Point2f rect[4];
+           //oint2f   rhombus[4];  //rhombus:内接菱形角点坐标
             box[i].points(rect);  //把最小外接矩形四个端点复制给rect数组
+
+
             float err_vertical = abs(rect[0].y - rect[2].y);
             float err_lateral = abs(rect[0].x - rect[2].x);
             float tan_inclination = err_lateral / err_vertical;
@@ -188,18 +191,37 @@ void DrawEnclosingRexts(Mat &grayImage, Mat &dstImage)
                         {
                             float err_vertical = abs(box[i].center.y - box[j].center.y);
                             float err_lateral = abs(box[i].center.x - box[j].center.x);
-                            float tan_inclination = (err_vertical / err_lateral);
+                            float tan_inclination = (err_vertical / err_lateral);   //中心点连线倾斜角
+
+                            Point2f rect[4];
+                            Point2f   rhombus[4];  //rhombus:内接菱形角点坐标
+                            box[i].points(rect);  //把最小外接矩形四个端点复制给rect数组
+                            rhombus[0].x=(rect[0].x+rect[1].x)/2;
+                            rhombus[1].x=(rect[1].x+rect[2].x)/2;
+                            rhombus[2].x=(rect[2].x+rect[3].x)/2;
+                            rhombus[3].x=(rect[3].x+rect[0].x)/2;
+                            rhombus[0].y=(rect[0].y+rect[1].y)/2;
+                            rhombus[1].y=(rect[1].y+rect[2].y)/2;
+                            rhombus[2].y=(rect[2].y+rect[3].y)/2;
+                            rhombus[3].y=(rect[3].y+rect[0].y)/2;
+
+                             err_vertical = abs(rect[0].y - rect[2].y);
+                             err_lateral = abs(rect[0].x - rect[2].x);
+                            float tan_inclination2= err_lateral / err_vertical; //灯条倾斜角
 
                             if (tan_inclination < tan(max_inclination_degree / 180.0*3.14)) //判断灯条中心连线的倾斜角
                             {
-                                float dis_x = (int)((box[i].center.x + box[j].center.x) / 2);
-                                float dis_y = (int)((box[i].center.y + box[j].center.y) / 2);
-                                circle(dstImage, Point(dis_x, dis_y), 5, (0, 0, 255), 1);
-                                Point2f PitchYawError = CaculatePitchYawError(dis_x, dis_y);
-                                //cout << PitchYawError.x << "   " << PitchYawError.y << endl;
+                                if(tan_inclination*tan_inclination2>(1-max_transformation)&&tan_inclination*tan_inclination2<(1+max_transformation))
+                                {
+                                    float dis_x = (int)((box[i].center.x + box[j].center.x) / 2);
+                                    float dis_y = (int)((box[i].center.y + box[j].center.y) / 2);
+                                    circle(dstImage, Point(dis_x, dis_y), 5, (0, 0, 255), 1);
+                                    Point2f PitchYawError = CaculatePitchYawError(dis_x, dis_y);
+                                    //cout << PitchYawError.x << "   " << PitchYawError.y << endl;
 
-                                DetectedArmourYawPitchError[detected_armour_cnt] = PitchYawError;
-                                detected_armour_cnt++;
+                                    DetectedArmourYawPitchError[detected_armour_cnt] = PitchYawError;
+                                    detected_armour_cnt++;
+                                }
 
                             }
                         }
