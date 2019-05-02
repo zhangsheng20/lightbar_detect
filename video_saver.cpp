@@ -44,7 +44,7 @@ void VideoSaver::write(Mat frame)
 {
     if( frameCount % maxFrame == 0 )
     {
-        string fileName = "/home/sheng/桌面" + GetCurrentTime() + ".avi";
+        string fileName = "/home/sheng/桌面/" + GetCurrentTime() + ".avi";
         writer.open(fileName, CV_FOURCC('M', 'J', 'P', 'G'), 25.0, frame.size());
     }
     frameCount++;

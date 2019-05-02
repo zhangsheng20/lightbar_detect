@@ -4,7 +4,7 @@
  #include <mutex>
 #include <stdio.h>
 #include "stdlib.h"
-
+#include "video_saver.h"
 #include "detect.h"
 #include "data_send.h"
 #include "opencv2/core/core.hpp"
@@ -22,9 +22,9 @@
 using namespace std;
 using namespace cv;
 #define TX2         //
-#define SERIAL_SEND //是否开启串口并发送数据
+//#define SERIAL_SEND //是否开启串口并发送数据
 #define SHOW_FRAMES //是否显示图像
-
+#define VIDEO_SAVE
 
 
 
@@ -82,6 +82,7 @@ Mat mythreshold(Mat &InputImage, int threshold)
     return OutImage;
 }
 
+VideoSaver videosaver;
 
 
 
@@ -121,6 +122,9 @@ int main()
             SendDataToInfantry();
         #endif
 
+        #ifdef VIDEO_SAVE
+             videosaver.write(frame_read);
+        #endif
         CoutFps();
     }
 
@@ -178,7 +182,8 @@ void CoutFps()
 void GetCameraPara()
 {
 
-    //capture.set(CAP_PROP_IRIS, 10);
+    capture.set(CAP_PROP_IRIS, 20);
+    //char c = waitKey(1);
     capture.set(CAP_PROP_FRAME_WIDTH, 640);//宽度
     capture.set(CAP_PROP_FRAME_HEIGHT, 400);//高度  分辨率设置成640*400时帧率是240
     capture.set(CAP_PROP_EXPOSURE, 1);
