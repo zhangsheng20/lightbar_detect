@@ -38,7 +38,7 @@ int camWay = 0; // 0: camera1 1: camera2  2: vedio
 
 VideoCapture capture;
 Serial sel;
-String video_file_name = ""; //将要打开的视频路径  注意‘/’和‘\’
+String video_file_name = "/home/sheng/桌面/2019-5-2_22-49-2.avi"; //将要打开的视频路径  注意‘/’和‘\’
 double myVideoCaptureProperties[50];   //存储摄像头参数
 
 
@@ -141,7 +141,7 @@ int OpenVideoStream(int camWay)
         capture.open(video_file_name); return true;
     }
     else if (camWay == 0) {
-        capture.open(0); return true;
+        capture.open(1); return true;
     }
     else if (camWay == 1) {
         capture.open(1); return true;
@@ -183,7 +183,7 @@ void CoutFps()
 void GetCameraPara()
 {
 
-    capture.set(CAP_PROP_IRIS, 20);
+    capture.set(CAP_PROP_IRIS, 100);
     //char c = waitKey(1);
     capture.set(CAP_PROP_FRAME_WIDTH, 640);//宽度
     capture.set(CAP_PROP_FRAME_HEIGHT, 400);//高度  分辨率设置成640*400时帧率是240

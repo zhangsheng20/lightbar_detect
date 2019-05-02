@@ -9,8 +9,8 @@
 //识别条件
 #define max_detect_distance_mm  3000.0f         //最远识别距离，超过此距离滤掉  单位mm
 #define min_detect_distance_mm  500.0f         //最近识别距离，超过此距离滤掉   单位mm
-#define max_inclination_degree   35.0f         //灯条对角线倾斜角超过一定度数，滤掉  单位度
-#define max_transformation       0.3f        //
+#define max_inclination_degree   25.0f         //灯条对角线倾斜角超过一定度数，滤掉  单位度
+#define max_transformation       0.4f        //
 
 //摄像头的一些参数
 #define Camera_fx 6.530675507960873e+02
@@ -71,6 +71,22 @@ Point2f CaculatePitchYawError(float Pixel_x, float Pixel_y)
     return Point2f(YawAngle, PitchAngle);
 }
 
+Point2f PitchYawError2PixelError(float YawAngleDegree, float PitchAngleDegree)
+{
+    float YawAngleRad=-YawAngleDegree/180*3.14;  //转化成弧度
+    float PitchAngleRad=-PitchAngleDegree/180*3.14;   //转化成弧度
+
+    float tan_yaw=tan(YawAngleRad);
+    float tan_pitch=tan(PitchAngleRad);
+
+    float Pixel_x=tan_yaw*Camera_fx+ myVideoCaptureProperties[CAP_PROP_FRAME_WIDTH] / 2 ;
+    float Pixel_y=tan_pitch*Camera_fy+myVideoCaptureProperties[CAP_PROP_FRAME_HEIGHT] / 2 ;
+
+
+
+return Point2f(Pixel_x,Pixel_y);
+}
+
 
 void DrawEnclosingRexts(Mat &grayImage, Mat &dstImage)
 {
@@ -104,7 +120,8 @@ void DrawEnclosingRexts(Mat &grayImage, Mat &dstImage)
 
         for (int i = 0; i < contours.size(); i++)
         {
-            box[i] = minAreaRect(Mat(contours[i]));  //计算每个轮廓最小外接矩形
+
+                box[i] = minAreaRect(Mat(contours[i]));  //计算每个轮廓最小外接矩形
         }
         if (box.empty())
         {
@@ -178,6 +195,8 @@ void DrawEnclosingRexts(Mat &grayImage, Mat &dstImage)
 
     }
 
+
+
     //配对：依据灯条长度和灯条之间距离的比值
     for (int i = 0; i < box.size() - 1; i++)    //最后一个不需要找
     {
@@ -231,7 +250,8 @@ void DrawEnclosingRexts(Mat &grayImage, Mat &dstImage)
 
                             if (tan_inclination < tan(max_inclination_degree / 180.0*3.14)) //判断灯条中心连线的倾斜角
                             {
-                                if(tan_inclination*tan_inclination2>(1-max_transformation)&&tan_inclination*tan_inclination2<(1+max_transformation)) //判断两个平行的灯条是否错位
+                                //if(tan_inclination*tan_inclination2>(1-max_transformation)&&tan_inclination*tan_inclination2<(1+max_transformation)) //判断两个平行的灯条是否错位
+
                                 {
                                     float dis_x = (int)((box[i].center.x + box[j].center.x) / 2);
                                     float dis_y = (int)((box[i].center.y + box[j].center.y) / 2);
@@ -256,6 +276,7 @@ void DrawEnclosingRexts(Mat &grayImage, Mat &dstImage)
     }
 
 
+
     if (detected_armour_cnt == 0)
     {
         IsDetectedFlag=0;   //未检测到
@@ -264,20 +285,26 @@ void DrawEnclosingRexts(Mat &grayImage, Mat &dstImage)
     else
     { //找出离上一帧最近的点
          IsDetectedFlag=1;   //检测到
-         float min_error = 20;
+         float min_error = 200;
         for (int i = 0; i < detected_armour_cnt;i++)
         {
             float error = pow((DetectedArmourYawPitchErrorCurrent[i].x-SendYawPitchErrorLast.x),2)
                             +pow((DetectedArmourYawPitchErrorCurrent[i].y-SendYawPitchErrorLast.y),2);
              if (error < min_error)
              {
+
                   min_error = error;
-                  SendYawPitchErrorCurrent =DetectedArmourYawPitchErrorCurrent[i];
+                  SendYawPitchErrorCurrent =DetectedArmourYawPitchErrorCurrent[i];               
              }
 
         }
+        Point2f Pixel= PitchYawError2PixelError(SendYawPitchErrorCurrent.x,SendYawPitchErrorCurrent.y);
+        circle(dstImage, Point(Pixel.x, Pixel.y), 10, (0, 0, 255), 4);
 
     }
+
+
+
 
 
 //    {//找出离中心最近的装甲板，发送给下位机
@@ -296,7 +323,7 @@ void DrawEnclosingRexts(Mat &grayImage, Mat &dstImage)
 //    }
 //}
 
-    cout << SendYawPitchErrorCurrent.x << "   " << SendYawPitchErrorCurrent.y << endl;
+    //cout << SendYawPitchErrorCurrent.x << "   " << SendYawPitchErrorCurrent.y << endl;
 
 }
 
