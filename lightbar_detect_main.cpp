@@ -1,23 +1,22 @@
 #include <iostream>
-#include "serial.h"
 #include <thread>
  #include <mutex>
 #include <stdio.h>
 #include "stdlib.h"
-#include "video_saver.h"
-#include "detect.h"
-#include "data_send.h"
+
+
 #include "opencv2/core/core.hpp"
-
 #include "opencv2/imgproc/imgproc.hpp"
-
 #include "opencv2/video/tracking.hpp"
 #include "opencv2/highgui/highgui.hpp"
-
 #include "opencv2/core/opengl.hpp"
 #include "opencv2/video.hpp"     //BackgroundSubtractor在里面
 
 
+#include "video_saver.h"
+#include "data_send.h"
+#include "serial.h"
+#include "lightbar_detect.h"
 
 using namespace std;
 using namespace cv;
@@ -146,10 +145,10 @@ int OpenVideoStream(int camWay)
         capture.open(video_file_name); return true;
     }
     else if (camWay == 0) {
-        capture.open(1); return true;
+        capture.open(0); return true;
     }
     else if (camWay == 1) {
-        capture.open(1); return true;
+        capture.open(0); return true;
     }
 
     if (!capture.isOpened())
